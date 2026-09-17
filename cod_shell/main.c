@@ -6,17 +6,17 @@
 
 int main(){
 
-    char input[200];
-    char *parameters[20];
+    char input[200]; // um vetor 
+    char *parameters[20]; // ponteiro pro vetor
     int status;
 
 
-    while(1){
-        printf("#_meu_shell > ");
-        scanf(" %[^\n]", input);
+    while(1){ // loopingo infinito 
+        printf("#_meu_shell > "); 
+        scanf(" %[^\n]", input); // lê o input colocado na shell
 
         int i = 0;
-        parameters[i] = strtok(input, " ");
+        parameters[i] = strtok(input, " "); // separa entre a função (input) e o parametro
         while( parameters[i] != NULL){
             i++;
             parameters[i] = strtok(NULL, " ");

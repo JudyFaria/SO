@@ -1,0 +1,4 @@
+SEM SEMAFORO | tarefas: 100 | valor esperado em cada posicao: 60
+  posicoes     8..  727 (  720 pos.): valor    -40 (diferenca -100)
+Posicoes com erro: 720 de 10000 | menor valor: -40 | maior valor: 60
+Resultado: HOUVE ERRO DE CONCORRENCIA

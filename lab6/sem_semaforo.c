@@ -6,7 +6,7 @@
 // Valor esperado ao final: 10 + soma_{k=1..N} (-1)^k * k
 // (para N = 100: 10 + 50 = 60)
 //
-// Compilar: gcc -Wall -O2 -pthread sem_semaforo.c -o sem_semaforo
+// Compilar: gcc -Wall -pthread sem_semaforo.c -o sem_semaforo
 // Executar: ./sem_semaforo [num_tarefas]     (padrao: 100)
 
 #include <stdio.h>

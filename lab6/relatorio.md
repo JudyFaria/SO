@@ -1,4 +1,5 @@
 # Lab Semáforos – INF1316 – Sistemas Operacionais
+### Judy Faria - 2312668
 
 ## Arquivos
 
@@ -12,8 +13,8 @@
 Compilação e execução:
 
 ```sh
-gcc -Wall -O2 -pthread sem_semaforo.c -o sem_semaforo
-gcc -Wall -O2 -pthread com_semaforo.c -o com_semaforo
+gcc -Wall -pthread sem_semaforo.c -o sem_semaforo
+gcc -Wall -pthread com_semaforo.c -o com_semaforo
 ./sem_semaforo          # 100 tarefas (padrão)
 ./sem_semaforo 1000     # número de tarefas pode ser passado como argumento
 ./com_semaforo
@@ -198,5 +199,3 @@ tarefas disputam a mesma posição. É o preço da corretude.
   posições terminam com o valor correto (60 para 100 tarefas) e as tarefas continuam executando
   concorrentemente.
 
-*Ambiente de teste: Linux, 4 núcleos, gcc com `-O2 -pthread`. Os números exatos variam de
-máquina para máquina e de execução para execução.*

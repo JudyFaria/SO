@@ -10,8 +10,6 @@ pid_t pids[N];
 
 int main(){
 
-
-
     // pai cria três filhos
     for (int i = 0; i < N; i++){
         pids[i] = fork();
@@ -31,27 +29,29 @@ int main(){
             _exit(1);
 
         }
-
-        // pai:
-
     }
-    
 
-    // pai: faz o papel do "kernel"
-    sleep(3);
-    // kill(pid, SIGSTOP); //pausar
-    // sleep(3);
-    // kill(pid, SIGCONT); // retomar
-    // sleep(3);
-    // kill(pid, SIGKILL);
-    
+    // espera todos os processos pararem 
+    for (int i = 0; i < N; i++){
+        waitpid(pids[i], NULL, WUNTRACED);
+        // WUNTRANCED faz o waitpid retornar quando o filho para, não só quando termina
+    }
+
+    // pai faz o papel do Kernel, rodício manual (Round Robin)
+    int atual = 0;
+    for (int turno = 0; turno < 9; turno++){
+        kill(pids[atual], SIGCONT); // app começa a rodar
+        sleep(1); // <- timeslice
+        kill(pids[atual], SIGSTOP); // timeslice acaba, para o app
+
+        atual = (atual + 1) % N;
+    }
 
     // o pai espera CADA filho 
     for (int i = 0; i < N; i++){
         kill(pids[i], SIGKILL);
         waitpid(pids[i], NULL, 0);
     }
-    
 
     return 0; 
 }

@@ -1,3 +1,5 @@
+#define MAX 10
+
 typedef enum { MSG_PC, MSG_SYSCALL } TipoMsg;
 
 typedef struct {

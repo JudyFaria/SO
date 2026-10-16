@@ -13,13 +13,13 @@ int main(int argc, char *argv[]){
     int id = atoi(argv[1]);
     int fd = atoi(argv[2]);
 
-    int pcs_syscall[] = {2, 2, 3}; // instantes do pedido e A1, A2 e A3
+    int pcs_syscall[] = {1, 1, 1}; // instantes do pedido e A1, A2 e A3
     char ops[] = {'R', 'W', 'R'};
 
     raise(SIGSTOP); // raise envia um sinal ao próprio processo
     // agora o app só entra no loop se alguém chamar SIGCONT(retomar)
 
-    for (int i = 0; ; i++){
+    for (int i = 0; i < MAX; i++){
         printf("A%d PC=%d\n",id, i);
 
         MsgPC m = { .tipo = MSG_PC,  .num_app = id, .pc = i };

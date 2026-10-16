@@ -9,18 +9,20 @@
 #include "common.h"
 
 #define N 3
-#define NUM_IRQS 20
 
-// --> handler
+
+// --> handler | Sinais
 // handler - função que o sistenma chama quando um sinal chega
 struct sigaction sa0;
 struct sigaction sa1;
 struct sigaction saSysCall;
+struct sigaction saChld;
 
 // flag volatile
 volatile sig_atomic_t irq0_pendente = 0;
 volatile sig_atomic_t irq1_pendente = 0;
 volatile sig_atomic_t syscall_pendente = 0;
+volatile sig_atomic_t filho_terminou = 0;
 
 // função do handler
 void trata_irq0(int sig) {
@@ -35,8 +37,12 @@ void trata_syscall(int sig){
     syscall_pendente = 1;
 }
 
+void trata_chld(int sig){
+    filho_terminou = 1;
+}
+
 // --> PCB 
-typedef enum { PRONTO, RODANDO, BLOQUEADO } Estado;
+typedef enum { PRONTO, RODANDO, BLOQUEADO, TERMINADO } Estado;
 
 typedef struct{
     pid_t pid; // quem é no sistema
@@ -60,6 +66,13 @@ typedef struct{
 Fila prontos;
 Fila bloqueados;
 
+// ->  estado do kernel, acessado apenas no laço principal
+// canal[0] = leitura, canal[1] = escrita
+int canal[2]; // pipe app - kernel (PC e syscall)
+int io[2]; // pipe kernel - IC (I/O)
+int rodando = -1; // global, usados nas funçoes auxiliares
+int terminados = 0;
+
 void enfileira(Fila *f, int id){
     f->itens[(f->inicio + f->tamanho) % N] = id; //primeira posição livre depois do último elemento
     f->tamanho++;
@@ -74,16 +87,6 @@ int desenfilera(Fila *f){
     f->tamanho--;
 
     return id;
-}
-
-void bloqueia( int id, int fd_io){
-    pcbs[id].pediu_syscall = 0;
-    pcbs[id].estado = BLOQUEADO;
-
-    enfileira(&bloqueados, id);
-
-    char bloq = 1;
-    write(fd_io, &bloq, 1); // avisa o IC que tem um pedido novo em D1
 }
 
 void imprime_fila(Fila *f){
@@ -109,7 +112,7 @@ void imprime_estado(int rodando){
 
     printf(" | PCs: ");
     for(int i = 0; i < N; i++){
-        printf("A%d=%d ", pcbs[i].num_app, pcbs[i].pc);
+        printf("A%d=%d%s ", pcbs[i].num_app, pcbs[i].pc, pcbs[i].estado == TERMINADO ? "(fim)" : "");
     }
 
     printf("\n");
@@ -127,6 +130,74 @@ void atualiza_pcs(int fd_leitura){
             p->dispositivo = m.dispositivo;
             p->operacao = m.operacao;
             p->pediu_syscall = 1;
+        }
+    }
+}
+
+void bloqueia( int id, int fd_io){
+    pcbs[id].pediu_syscall = 0;
+    pcbs[id].estado = BLOQUEADO;
+
+    enfileira(&bloqueados, id);
+
+    char bloq = 1;
+    write(fd_io, &bloq, 1); // avisa o IC que tem um pedido novo em D1
+}
+
+// tira o próximo da fila de prontos e o libera
+int despacha(){
+    int id = desenfilera(&prontos);
+
+    if (id >= 0){
+        pcbs[id].estado = RODANDO;
+        kill(pcbs[id].pid, SIGCONT);
+    }
+
+    return id;
+}
+
+// registra o término de um processo
+void finaliza(int id){
+    atualiza_pcs(canal[0]);
+
+    pcbs[id].estado = TERMINADO;
+    pcbs[id].pediu_syscall = 0;
+
+    terminados++;
+
+    if (rodando == id){
+        rodando = -1;
+    }
+
+    printf("A%d terminou (PC final = %d)\n", pcbs[id].num_app, pcbs[id].pc);
+}
+
+// para o processo, de fato, e salva o contexto
+int para_e_salva(int id){
+    int st = 0;
+
+    kill(pcbs[id].pid, SIGSTOP);
+    waitpid(pcbs[id].pid, &st, WUNTRACED);
+
+    if(WIFSTOPPED(st)){
+        atualiza_pcs(canal[0]);
+        
+        return 1; // se realmente parou
+    }
+    
+    finaliza(id); 
+    
+    return 0; // se já havia terminado 
+}
+
+// verifica quais processos terminaram, sem travar
+void verifica_terminados(){
+    for (int i = 0; i < N; i++){
+        if (pcbs[i].estado == TERMINADO) continue;
+
+        int st;
+        if (waitpid(pcbs[i].pid, &st, WNOHANG) == pcbs[i].pid){
+            finaliza(i);
         }
     }
 }
@@ -151,9 +222,14 @@ int main(){
     saSysCall.sa_flags = 0;
     sigaction(SIGRTMIN, &saSysCall, NULL);
 
+    // -> registra o hendler - sigchld (qunaod o filho termina)
+    saChld.sa_handler = trata_chld;
+    sigemptyset(&saChld.sa_mask);
+    saChld.sa_flags = SA_NOCLDSTOP;
+    sigaction(SIGCHLD, &saChld, NULL);
+
     
-    // criando pipe (comunicação entre processos)
-    int canal[2]; // canal[0] = leitura, canal[1] = escrita
+    // pipe dos apps (comunicação entre processos)
     pipe(canal);
     fcntl(canal[0], F_SETFL, O_NONBLOCK);
 
@@ -194,23 +270,20 @@ int main(){
     // espera todos os processos pararem (raise(SIGSTOP) no app)
     for (int i = 0; i < N; i++){
         waitpid(pcbs[i].pid, NULL, WUNTRACED);
-        // WUNTRANCED faz o waitpid retornar quando o filho para, não só quando termina
+        // WUNTRACED faz o waitpid retornar quando o filho para, não só quando termina
     }
 
     // coloca todos na fila de prontos
     for (int i = 0; i < N; i++){
         enfileira(&prontos, i);
-        pcbs[i].estado = PRONTO;
     }
 
     // pipe de I/O
-    int io[2];
     pipe(io);
     fcntl(io[0],F_SETFL, O_NONBLOCK);
     
-    // começa a rodar os processos
-    int rodando = desenfilera(&prontos);
-    kill(pcbs[rodando].pid, SIGCONT);
+    // começa a rodar os processos, primeiro despacho
+    rodando = despacha();
     imprime_estado(rodando);
 
     // fork do InterController  
@@ -230,20 +303,43 @@ int main(){
     }
     close(io[0]); // kernel só escreve
 
+    // --> Bloqueia os sinais depois de criar os filhos 
+    sigset_t mascara_irq, mascara_vazia; // conjunto de sinais
+    
+    sigemptyset(&mascara_irq); // esvazia a lista
+    sigemptyset(&mascara_vazia);
+    
+    sigaddset(&mascara_irq, SIGUSR1); // coloca um sianl na lista
+    sigaddset(&mascara_irq, SIGUSR2);
+    sigaddset(&mascara_irq, SIGRTMIN);
+    sigaddset(&mascara_irq, SIGCHLD);
+
+    sigprocmask(SIG_BLOCK, &mascara_irq, NULL); // coloca os sinais em bloqueio no processo
+
+
     // --> laço principal do kernel
     
     // pai faz o papel do Kernel, rodício manual (Round Robin)
-    int irqs = 0;
-    int liberado;
 
-    while (irqs < NUM_IRQS){
-        pause(); // retorna qualquer sinal de handler
+    for(int i = 0; ;i++){
+
+        // o processo que terminou saí antes de qualquer outra decisão
+        if (filho_terminou){
+            filho_terminou = 0;
+
+            verifica_terminados();
+            
+            if (rodando < 0){
+                rodando = despacha();
+                imprime_estado(rodando);
+            }
+        }
         
         // processos em espera de I/O têm prioridade
         if (irq1_pendente){
             irq1_pendente = 0; //zera a flag
             
-            liberado = desenfilera(&bloqueados);
+            int liberado = desenfilera(&bloqueados);
             if(liberado >= 0){
                 // altera o estado e coloca noa fila de prontos
                 pcbs[liberado].estado = PRONTO;
@@ -251,81 +347,65 @@ int main(){
             }
 
             if(rodando < 0){   
-               rodando = desenfilera(&prontos);  // a CPU fica livre e já escolhe o proximo processo
-                if (rodando >= 0){
-                    pcbs[rodando].estado = RODANDO;
-                    kill(pcbs[rodando].pid, SIGCONT);
-                }
+               rodando = despacha();  // a CPU fica livre e já escolhe o proximo processo
                 imprime_estado(rodando);
             }
-    
         }
 
-        // bloco SYSCALL
+        // bloco SysCall
         if (syscall_pendente){
             syscall_pendente = 0;
             atualiza_pcs(canal[0]);
 
             if (rodando >= 0 && pcbs[rodando].pediu_syscall){
-                kill(pcbs[rodando].pid, SIGSTOP); 
-                waitpid(pcbs[rodando].pid, NULL, WUNTRACED);      
-                atualiza_pcs(canal[0]); // última leitura, com o PC final
-                
-                bloqueia(rodando, io[1]);
-
-                rodando = desenfilera(&prontos);  // a CPU fica livre e já escolhe o proximo processo
-                if (rodando >= 0){
-                    pcbs[rodando].estado = RODANDO;
-                    kill(pcbs[rodando].pid, SIGCONT);
+                if (para_e_salva(rodando)){
+                     bloqueia(rodando, io[1]);
                 }
-
+                
+                rodando = despacha();  // a CPU fica livre e já escolhe o proximo processo
                 imprime_estado(rodando);
             }     
         }
 
+        // fim de timeslice
         if(irq0_pendente){
             irq0_pendente = 0; // zera a flag
-            irqs++;
 
             // --> Troca de Contexto
 
             // para quem está rodando e coloca no final da fila
             if (rodando >= 0){
                 
-                kill(pcbs[rodando].pid, SIGSTOP); // apenas manda sinal, não para de fato
-                waitpid(pcbs[rodando].pid, NULL, WUNTRACED); // espera parar de fato, garantindo que o app não escreva mais nada antes de o kernel ler.
-                
-                atualiza_pcs(canal[0]); // salva o contexto, ler o que o app escreveu
-                
-                if (pcbs[rodando].pediu_syscall){
-                    bloqueia(rodando, io[1]);
-                }
-                else{
-                    pcbs[rodando].estado = PRONTO;
-                    enfileira(&prontos, rodando);
+                if (para_e_salva(rodando)){
+                    if (pcbs[rodando].pediu_syscall){
+                        bloqueia(rodando, io[1]);
+                    }
+                    else{
+                        pcbs[rodando].estado = PRONTO;
+                        enfileira(&prontos, rodando);
+                    }
                 }
             }
 
-            // tirar o próximo da fila
-            rodando = desenfilera(&prontos);
-
-            // libera o novo processo
-            if(rodando >= 0){
-                kill(pcbs[rodando].pid, SIGCONT);
-                pcbs[rodando].estado = RODANDO;
-            }
+            // tirar o próximo da fila e libera o novo processo
+            rodando = despacha();
 
             imprime_estado(rodando);
         }
+
+        // fim do teste: todos terminaram
+        if (terminados == N){
+            break;
+        }
+
+        // desbloqueia e dorme de forma atômica
+        sigsuspend(&mascara_vazia);
     }
     
     kill(pid_ic, SIGKILL);
     waitpid(pid_ic, NULL, 0);
 
-    for (int i = 0; i < N; i++){
-        kill(pcbs[i].pid, SIGKILL);
-        waitpid(pcbs[i].pid, NULL, 0);
-    }
+    printf("Todos os processos terminaram.\n");
 
     return 0; 
 }

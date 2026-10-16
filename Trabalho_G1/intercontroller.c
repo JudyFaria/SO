@@ -9,7 +9,7 @@ int main(){
     pid_t pid_kernel = getppid();
 
     for (int i = 0; ; i++){
-        sleep(1);
+        sleep(1); // timeslice, o kernel apenas reage
         kill(pid_kernel, SIGUSR1);
     }
 

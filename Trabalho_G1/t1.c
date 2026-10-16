@@ -168,10 +168,11 @@ int main(){
 
             // para quem está rodando e coloca no final da fila
             if (rodando >= 0){
-                kill(pcbs[rodando].pid, SIGSTOP);
                 
-                waitpid(pcbs[rodando].pid, NULL, WUNTRACED); // esperaparar
-                atualiza_pcs(canal[0]); // salva o contexto
+                kill(pcbs[rodando].pid, SIGSTOP); // apenas manda sinal, não para de fato
+                waitpid(pcbs[rodando].pid, NULL, WUNTRACED); // espera parar de fato, garantindo que o app não escreva mais nada antes de o kernel ler.
+                
+                atualiza_pcs(canal[0]); // salva o contexto, ler o que o app escreveu
                 
                 enfileira_prontos(rodando);
             }

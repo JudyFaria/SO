@@ -1,0 +1,3 @@
+COM SEMAFORO | tarefas: 1000 | valor esperado em cada posicao: 510
+Posicoes com erro: 0 de 10000 | menor valor: 510 | maior valor: 510
+Resultado: nenhum erro detectado

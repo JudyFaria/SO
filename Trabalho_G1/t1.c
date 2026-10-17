@@ -8,8 +8,14 @@
 #include <fcntl.h>
 #include "common.h"
 
+// para definir na compilação
+#ifndef N
 #define N 3
+#endif
 
+#if N < 3 || N > 6
+#error "N deve ser entre 3 e 6 (enuciado)"
+#endif
 
 // --> handler | Sinais
 // handler - função que o sistenma chama quando um sinal chega
@@ -17,12 +23,14 @@ struct sigaction sa0;
 struct sigaction sa1;
 struct sigaction saSysCall;
 struct sigaction saChld;
+struct sigaction saTerm;
 
 // flag volatile
 volatile sig_atomic_t irq0_pendente = 0;
 volatile sig_atomic_t irq1_pendente = 0;
 volatile sig_atomic_t syscall_pendente = 0;
 volatile sig_atomic_t filho_terminou = 0;
+volatile sig_atomic_t encerrar = 0;
 
 // função do handler
 void trata_irq0(int sig) {
@@ -39,6 +47,10 @@ void trata_syscall(int sig){
 
 void trata_chld(int sig){
     filho_terminou = 1;
+}
+
+void trata_term(int sig){
+    encerrar = 1;
 }
 
 // --> PCB 
@@ -70,8 +82,10 @@ Fila bloqueados;
 // canal[0] = leitura, canal[1] = escrita
 int canal[2]; // pipe app - kernel (PC e syscall)
 int io[2]; // pipe kernel - IC (I/O)
+
 int rodando = -1; // global, usados nas funçoes auxiliares
 int terminados = 0;
+int tempo = 0; // relógio lógico: quantos IRQ0 já chegaram ( 1 tick = 1s )
 
 void enfileira(Fila *f, int id){
     f->itens[(f->inicio + f->tamanho) % N] = id; //primeira posição livre depois do último elemento
@@ -96,7 +110,9 @@ void imprime_fila(Fila *f){
     }
 }
 
-void imprime_estado(int rodando){
+void imprime_estado(int rodando, const char *evento){
+    printf("[t=%2ds] %-8s| ", tempo, evento);
+
     if (rodando >= 0){
         printf("A%d rodando", pcbs[rodando].num_app);
     }
@@ -169,7 +185,7 @@ void finaliza(int id){
         rodando = -1;
     }
 
-    printf("A%d terminou (PC final = %d)\n", pcbs[id].num_app, pcbs[id].pc);
+    printf("[t=%2ds] FIM | A%d terminou (PC final = %d)\n", tempo, pcbs[id].num_app, pcbs[id].pc);
 }
 
 // para o processo, de fato, e salva o contexto
@@ -202,7 +218,19 @@ void verifica_terminados(){
     }
 }
 
-int main(){
+int main(int argc, char *argv[]){
+
+    setvbuf(stdout, NULL, _IOLBF, 0);   // uma linha = uma escrita (antes de qualquer fork)
+
+    // ---- tabela de syscalls: argv[1..N], um token "<PC><R|W>" por app ("-" = nenhum) ----
+    static const char *padrao[6] = {"2R", "2W", "3R", "3W", "4R", "4W"};
+    const char *tokens[N];
+    for (int i = 0; i < N; i++)
+        tokens[i] = (argc > 1 + i) ? argv[1 + i] : padrao[i];
+ 
+    printf("--- %d apps, MAX=%d, syscalls:", N, MAX);
+    for (int i = 0; i < N; i++) printf(" A%d=%s", i + 1, tokens[i]);
+    printf(" ---\n");
 
     // -> registra o handler - irq0
     sa0.sa_handler = trata_irq0; // quem será chamada
@@ -228,6 +256,13 @@ int main(){
     saChld.sa_flags = SA_NOCLDSTOP;
     sigaction(SIGCHLD, &saChld, NULL);
 
+    // -> registra o hendler - sigterm (quando recebe o sinal de término)
+    saTerm.sa_handler = trata_term;
+    sigemptyset(&saTerm.sa_mask);
+    saTerm.sa_flags = 0;
+    sigaction(SIGTERM, &saTerm, NULL);
+    sigaction(SIGINT, &saTerm, NULL);
+
     
     // pipe dos apps (comunicação entre processos)
     pipe(canal);
@@ -251,7 +286,7 @@ int main(){
             snprintf(num_processo, sizeof(num_processo), "%d", i+1);
             snprintf(fd_str, sizeof(fd_str), "%d", canal[1]);
 
-            execl("./app", "app", num_processo, fd_str, NULL);
+            execl("./app", "app", num_processo, fd_str, tokens[i], NULL);
             // parâmetros: 1º caminho binário; 2º po convenção, o nome do programa; 3º numero do app; 4° descritor de escrita; Último - sempre NULL
 
             perror("execl");
@@ -284,7 +319,7 @@ int main(){
     
     // começa a rodar os processos, primeiro despacho
     rodando = despacha();
-    imprime_estado(rodando);
+    imprime_estado(rodando, "INICIO");
 
     // fork do InterController  
     pid_t pid_ic = fork();
@@ -309,10 +344,13 @@ int main(){
     sigemptyset(&mascara_irq); // esvazia a lista
     sigemptyset(&mascara_vazia);
     
-    sigaddset(&mascara_irq, SIGUSR1); // coloca um sianl na lista
+    sigaddset(&mascara_irq, SIGUSR1); // coloca um sinal na lista
     sigaddset(&mascara_irq, SIGUSR2);
     sigaddset(&mascara_irq, SIGRTMIN);
     sigaddset(&mascara_irq, SIGCHLD);
+
+    sigaddset(&mascara_irq, SIGTERM);
+    sigaddset(&mascara_irq, SIGINT);
 
     sigprocmask(SIG_BLOCK, &mascara_irq, NULL); // coloca os sinais em bloqueio no processo
 
@@ -320,8 +358,15 @@ int main(){
     // --> laço principal do kernel
     
     // pai faz o papel do Kernel, rodício manual (Round Robin)
-
+    int aviso_final = 0;
     for(int i = 0; ;i++){
+        // acordou só com o IRQ1? espera o IRQ0 do mesmo tick, para tratar os dois juntos
+        while (irq1_pendente && !irq0_pendente && !encerrar)
+            sigsuspend(&mascara_vazia);
+
+        if(encerrar) break; // se recebeu SIGTERM ou SIGINT, encerra o kernel
+        
+        if (irq0_pendente) tempo++; //conta o tick antes de tratar qualquer bloco
 
         // o processo que terminou saí antes de qualquer outra decisão
         if (filho_terminou){
@@ -331,7 +376,7 @@ int main(){
             
             if (rodando < 0){
                 rodando = despacha();
-                imprime_estado(rodando);
+                imprime_estado(rodando, "FIM");
             }
         }
         
@@ -344,11 +389,12 @@ int main(){
                 // altera o estado e coloca noa fila de prontos
                 pcbs[liberado].estado = PRONTO;
                 enfileira(&prontos, liberado);
+                printf("[t=%2ds] %-8s| A%d concluiu o I/O em D1 (%c)\n", tempo, "IRQ1", pcbs[liberado].num_app, pcbs[liberado].operacao);
             }
 
             if(rodando < 0){   
                rodando = despacha();  // a CPU fica livre e já escolhe o proximo processo
-                imprime_estado(rodando);
+                imprime_estado(rodando, "IRQ1");
             }
         }
 
@@ -363,7 +409,7 @@ int main(){
                 }
                 
                 rodando = despacha();  // a CPU fica livre e já escolhe o proximo processo
-                imprime_estado(rodando);
+                imprime_estado(rodando, "SYSCALL");
             }     
         }
 
@@ -390,13 +436,21 @@ int main(){
             // tirar o próximo da fila e libera o novo processo
             rodando = despacha();
 
-            imprime_estado(rodando);
+            if (terminados < N) imprime_estado(rodando, "IRQ0");
         }
 
-        // fim do teste: todos terminaram
-        if (terminados == N){
-            break;
+      
+        if (terminados == N && !aviso_final){
+            aviso_final = 1;
+            printf("[t=%2ds] Todos os processos terminaram. Kernel ocioso (Ctrl+C encerra).\n", tempo);
         }
+
+        // // fim do teste: todos terminaram
+        // if (terminados == N){
+        //     break;
+        // }
+
+        // printf("Todos os processos terminaram.\n");
 
         // desbloqueia e dorme de forma atômica
         sigsuspend(&mascara_vazia);
@@ -404,8 +458,13 @@ int main(){
     
     kill(pid_ic, SIGKILL);
     waitpid(pid_ic, NULL, 0);
-
-    printf("Todos os processos terminaram.\n");
+    
+    for (int i = 0; i < N; i++){
+        if(pcbs[i].estado != TERMINADO){
+            kill(pcbs[i].pid, SIGKILL); // SIGKILL atinge até o processo parado
+            waitpid(pcbs[i].pid, NULL, 0);
+        }
+    }
 
     return 0; 
 }

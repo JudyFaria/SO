@@ -1,0 +1,139 @@
+--- 6 apps, MAX=10, syscalls: A1=2R A2=2W A3=3R A4=3W A5=4R A6=4W ---
+[t= 0s] INICIO  | A1 rodando | Prontos: A2 A3 A4 A5 A6  | Bloqueados:  | PCs: A1=0 A2=0 A3=0 A4=0 A5=0 A6=0 
+A1 PC=0
+A1 PC=1
+[t= 1s] IRQ0    | A2 rodando | Prontos: A3 A4 A5 A6 A1  | Bloqueados:  | PCs: A1=1 A2=0 A3=0 A4=0 A5=0 A6=0 
+A2 PC=0
+[t= 2s] IRQ0    | A3 rodando | Prontos: A4 A5 A6 A1 A2  | Bloqueados:  | PCs: A1=1 A2=0 A3=0 A4=0 A5=0 A6=0 
+A3 PC=0
+[t= 3s] IRQ0    | A4 rodando | Prontos: A5 A6 A1 A2 A3  | Bloqueados:  | PCs: A1=1 A2=0 A3=0 A4=0 A5=0 A6=0 
+A4 PC=0
+[t= 4s] IRQ0    | A5 rodando | Prontos: A6 A1 A2 A3 A4  | Bloqueados:  | PCs: A1=1 A2=0 A3=0 A4=0 A5=0 A6=0 
+A5 PC=0
+[t= 5s] IRQ0    | A6 rodando | Prontos: A1 A2 A3 A4 A5  | Bloqueados:  | PCs: A1=1 A2=0 A3=0 A4=0 A5=0 A6=0 
+A6 PC=0
+[t= 6s] IRQ0    | A1 rodando | Prontos: A2 A3 A4 A5 A6  | Bloqueados:  | PCs: A1=1 A2=0 A3=0 A4=0 A5=0 A6=0 
+A1 PC=2
+[t= 6s] SYSCALL | A2 rodando | Prontos: A3 A4 A5 A6  | Bloqueados: A1  | PCs: A1=2 A2=0 A3=0 A4=0 A5=0 A6=0 
+A2 PC=1
+[t= 7s] IRQ0    | A3 rodando | Prontos: A4 A5 A6 A2  | Bloqueados: A1  | PCs: A1=2 A2=1 A3=0 A4=0 A5=0 A6=0 
+A3 PC=1
+[t= 8s] IRQ0    | A4 rodando | Prontos: A5 A6 A2 A3  | Bloqueados: A1  | PCs: A1=2 A2=1 A3=1 A4=0 A5=0 A6=0 
+A4 PC=1
+[t= 9s] IRQ0    | A5 rodando | Prontos: A6 A2 A3 A4  | Bloqueados: A1  | PCs: A1=2 A2=1 A3=1 A4=1 A5=0 A6=0 
+A5 PC=1
+[t=10s] IRQ1    | A1 concluiu o I/O em D1 (R)
+[t=10s] IRQ0    | A6 rodando | Prontos: A2 A3 A4 A1 A5  | Bloqueados:  | PCs: A1=2 A2=1 A3=1 A4=1 A5=1 A6=0 
+A6 PC=1
+[t=11s] IRQ0    | A2 rodando | Prontos: A3 A4 A1 A5 A6  | Bloqueados:  | PCs: A1=2 A2=1 A3=1 A4=1 A5=1 A6=1 
+A2 PC=2
+[t=11s] SYSCALL | A3 rodando | Prontos: A4 A1 A5 A6  | Bloqueados: A2  | PCs: A1=2 A2=2 A3=1 A4=1 A5=1 A6=1 
+A3 PC=2
+[t=12s] IRQ0    | A4 rodando | Prontos: A1 A5 A6 A3  | Bloqueados: A2  | PCs: A1=2 A2=2 A3=2 A4=1 A5=1 A6=1 
+A4 PC=2
+[t=13s] IRQ0    | A1 rodando | Prontos: A5 A6 A3 A4  | Bloqueados: A2  | PCs: A1=2 A2=2 A3=2 A4=2 A5=1 A6=1 
+A1 PC=3
+[t=14s] IRQ0    | A5 rodando | Prontos: A6 A3 A4 A1  | Bloqueados: A2  | PCs: A1=3 A2=2 A3=2 A4=2 A5=1 A6=1 
+A5 PC=2
+[t=15s] IRQ1    | A2 concluiu o I/O em D1 (W)
+[t=15s] IRQ0    | A6 rodando | Prontos: A3 A4 A1 A2 A5  | Bloqueados:  | PCs: A1=3 A2=2 A3=2 A4=2 A5=2 A6=1 
+A6 PC=2
+[t=16s] IRQ0    | A3 rodando | Prontos: A4 A1 A2 A5 A6  | Bloqueados:  | PCs: A1=3 A2=2 A3=2 A4=2 A5=2 A6=2 
+A3 PC=3
+[t=16s] SYSCALL | A4 rodando | Prontos: A1 A2 A5 A6  | Bloqueados: A3  | PCs: A1=3 A2=2 A3=3 A4=2 A5=2 A6=2 
+A4 PC=3
+[t=16s] SYSCALL | A1 rodando | Prontos: A2 A5 A6  | Bloqueados: A3 A4  | PCs: A1=3 A2=2 A3=3 A4=3 A5=2 A6=2 
+A1 PC=4
+[t=17s] IRQ0    | A2 rodando | Prontos: A5 A6 A1  | Bloqueados: A3 A4  | PCs: A1=4 A2=2 A3=3 A4=3 A5=2 A6=2 
+A2 PC=3
+[t=18s] IRQ0    | A5 rodando | Prontos: A6 A1 A2  | Bloqueados: A3 A4  | PCs: A1=4 A2=3 A3=3 A4=3 A5=2 A6=2 
+A5 PC=3
+[t=19s] IRQ0    | A6 rodando | Prontos: A1 A2 A5  | Bloqueados: A3 A4  | PCs: A1=4 A2=3 A3=3 A4=3 A5=3 A6=2 
+A6 PC=3
+[t=20s] IRQ1    | A3 concluiu o I/O em D1 (R)
+[t=20s] IRQ0    | A1 rodando | Prontos: A2 A5 A3 A6  | Bloqueados: A4  | PCs: A1=4 A2=3 A3=3 A4=3 A5=3 A6=3 
+A1 PC=5
+[t=21s] IRQ0    | A2 rodando | Prontos: A5 A3 A6 A1  | Bloqueados: A4  | PCs: A1=5 A2=3 A3=3 A4=3 A5=3 A6=3 
+A2 PC=4
+[t=22s] IRQ0    | A5 rodando | Prontos: A3 A6 A1 A2  | Bloqueados: A4  | PCs: A1=5 A2=4 A3=3 A4=3 A5=3 A6=3 
+A5 PC=4
+[t=22s] SYSCALL | A3 rodando | Prontos: A6 A1 A2  | Bloqueados: A4 A5  | PCs: A1=5 A2=4 A3=3 A4=3 A5=4 A6=3 
+A3 PC=4
+[t=23s] IRQ1    | A4 concluiu o I/O em D1 (W)
+[t=23s] IRQ0    | A6 rodando | Prontos: A1 A2 A4 A3  | Bloqueados: A5  | PCs: A1=5 A2=4 A3=4 A4=3 A5=4 A6=3 
+A6 PC=4
+[t=23s] SYSCALL | A1 rodando | Prontos: A2 A4 A3  | Bloqueados: A5 A6  | PCs: A1=5 A2=4 A3=4 A4=3 A5=4 A6=4 
+A1 PC=6
+[t=24s] IRQ0    | A2 rodando | Prontos: A4 A3 A1  | Bloqueados: A5 A6  | PCs: A1=6 A2=4 A3=4 A4=3 A5=4 A6=4 
+A2 PC=5
+[t=25s] IRQ0    | A4 rodando | Prontos: A3 A1 A2  | Bloqueados: A5 A6  | PCs: A1=6 A2=5 A3=4 A4=3 A5=4 A6=4 
+A4 PC=4
+[t=26s] IRQ1    | A5 concluiu o I/O em D1 (R)
+[t=26s] IRQ0    | A3 rodando | Prontos: A1 A2 A5 A4  | Bloqueados: A6  | PCs: A1=6 A2=5 A3=4 A4=4 A5=4 A6=4 
+A3 PC=5
+[t=27s] IRQ0    | A1 rodando | Prontos: A2 A5 A4 A3  | Bloqueados: A6  | PCs: A1=6 A2=5 A3=5 A4=4 A5=4 A6=4 
+A1 PC=7
+[t=28s] IRQ0    | A2 rodando | Prontos: A5 A4 A3 A1  | Bloqueados: A6  | PCs: A1=7 A2=5 A3=5 A4=4 A5=4 A6=4 
+A2 PC=6
+[t=29s] IRQ1    | A6 concluiu o I/O em D1 (W)
+[t=29s] IRQ0    | A5 rodando | Prontos: A4 A3 A1 A6 A2  | Bloqueados:  | PCs: A1=7 A2=6 A3=5 A4=4 A5=4 A6=4 
+A5 PC=5
+[t=30s] IRQ0    | A4 rodando | Prontos: A3 A1 A6 A2 A5  | Bloqueados:  | PCs: A1=7 A2=6 A3=5 A4=4 A5=5 A6=4 
+A4 PC=5
+[t=31s] IRQ0    | A3 rodando | Prontos: A1 A6 A2 A5 A4  | Bloqueados:  | PCs: A1=7 A2=6 A3=5 A4=5 A5=5 A6=4 
+A3 PC=6
+A3 PC=7
+[t=32s] IRQ0    | A1 rodando | Prontos: A6 A2 A5 A4 A3  | Bloqueados:  | PCs: A1=7 A2=6 A3=7 A4=5 A5=5 A6=4 
+A1 PC=8
+[t=33s] IRQ0    | A6 rodando | Prontos: A2 A5 A4 A3 A1  | Bloqueados:  | PCs: A1=8 A2=6 A3=7 A4=5 A5=5 A6=4 
+A6 PC=5
+[t=34s] IRQ0    | A2 rodando | Prontos: A5 A4 A3 A1 A6  | Bloqueados:  | PCs: A1=8 A2=6 A3=7 A4=5 A5=5 A6=5 
+A2 PC=7
+[t=35s] IRQ0    | A5 rodando | Prontos: A4 A3 A1 A6 A2  | Bloqueados:  | PCs: A1=8 A2=7 A3=7 A4=5 A5=5 A6=5 
+A5 PC=6
+[t=36s] IRQ0    | A4 rodando | Prontos: A3 A1 A6 A2 A5  | Bloqueados:  | PCs: A1=8 A2=7 A3=7 A4=5 A5=6 A6=5 
+A4 PC=6
+[t=37s] IRQ0    | A3 rodando | Prontos: A1 A6 A2 A5 A4  | Bloqueados:  | PCs: A1=8 A2=7 A3=7 A4=6 A5=6 A6=5 
+A3 PC=8
+[t=38s] IRQ0    | A1 rodando | Prontos: A6 A2 A5 A4 A3  | Bloqueados:  | PCs: A1=8 A2=7 A3=8 A4=6 A5=6 A6=5 
+A1 PC=9
+[t=39s] IRQ0    | A6 rodando | Prontos: A2 A5 A4 A3 A1  | Bloqueados:  | PCs: A1=9 A2=7 A3=8 A4=6 A5=6 A6=5 
+A6 PC=6
+[t=40s] IRQ0    | A2 rodando | Prontos: A5 A4 A3 A1 A6  | Bloqueados:  | PCs: A1=9 A2=7 A3=8 A4=6 A5=6 A6=6 
+A2 PC=8
+[t=41s] IRQ0    | A5 rodando | Prontos: A4 A3 A1 A6 A2  | Bloqueados:  | PCs: A1=9 A2=8 A3=8 A4=6 A5=6 A6=6 
+A5 PC=7
+[t=42s] IRQ0    | A4 rodando | Prontos: A3 A1 A6 A2 A5  | Bloqueados:  | PCs: A1=9 A2=8 A3=8 A4=6 A5=7 A6=6 
+A4 PC=7
+[t=43s] IRQ0    | A3 rodando | Prontos: A1 A6 A2 A5 A4  | Bloqueados:  | PCs: A1=9 A2=8 A3=8 A4=7 A5=7 A6=6 
+A3 PC=9
+[t=44s] IRQ0    | A1 rodando | Prontos: A6 A2 A5 A4 A3  | Bloqueados:  | PCs: A1=9 A2=8 A3=9 A4=7 A5=7 A6=6 
+[t=44s] FIM | A1 terminou (PC final = 9)
+[t=44s] FIM     | A6 rodando | Prontos: A2 A5 A4 A3  | Bloqueados:  | PCs: A1=9(fim) A2=8 A3=9 A4=7 A5=7 A6=6 
+A6 PC=7
+[t=45s] IRQ0    | A2 rodando | Prontos: A5 A4 A3 A6  | Bloqueados:  | PCs: A1=9(fim) A2=8 A3=9 A4=7 A5=7 A6=7 
+A2 PC=9
+[t=46s] IRQ0    | A5 rodando | Prontos: A4 A3 A6 A2  | Bloqueados:  | PCs: A1=9(fim) A2=9 A3=9 A4=7 A5=7 A6=7 
+A5 PC=8
+[t=47s] IRQ0    | A4 rodando | Prontos: A3 A6 A2 A5  | Bloqueados:  | PCs: A1=9(fim) A2=9 A3=9 A4=7 A5=8 A6=7 
+A4 PC=8
+[t=48s] IRQ0    | A3 rodando | Prontos: A6 A2 A5 A4  | Bloqueados:  | PCs: A1=9(fim) A2=9 A3=9 A4=8 A5=8 A6=7 
+[t=48s] FIM | A3 terminou (PC final = 9)
+[t=48s] FIM     | A6 rodando | Prontos: A2 A5 A4  | Bloqueados:  | PCs: A1=9(fim) A2=9 A3=9(fim) A4=8 A5=8 A6=7 
+A6 PC=8
+[t=49s] IRQ0    | A2 rodando | Prontos: A5 A4 A6  | Bloqueados:  | PCs: A1=9(fim) A2=9 A3=9(fim) A4=8 A5=8 A6=8 
+[t=49s] FIM | A2 terminou (PC final = 9)
+[t=49s] FIM     | A5 rodando | Prontos: A4 A6  | Bloqueados:  | PCs: A1=9(fim) A2=9(fim) A3=9(fim) A4=8 A5=8 A6=8 
+A5 PC=9
+[t=50s] IRQ0    | A4 rodando | Prontos: A6 A5  | Bloqueados:  | PCs: A1=9(fim) A2=9(fim) A3=9(fim) A4=8 A5=9 A6=8 
+A4 PC=9
+[t=51s] IRQ0    | A6 rodando | Prontos: A5 A4  | Bloqueados:  | PCs: A1=9(fim) A2=9(fim) A3=9(fim) A4=9 A5=9 A6=8 
+A6 PC=9
+[t=52s] IRQ0    | A5 rodando | Prontos: A4 A6  | Bloqueados:  | PCs: A1=9(fim) A2=9(fim) A3=9(fim) A4=9 A5=9 A6=9 
+[t=52s] FIM | A5 terminou (PC final = 9)
+[t=52s] FIM     | A4 rodando | Prontos: A6  | Bloqueados:  | PCs: A1=9(fim) A2=9(fim) A3=9(fim) A4=9 A5=9(fim) A6=9 
+[t=52s] FIM | A4 terminou (PC final = 9)
+[t=52s] FIM     | A6 rodando | Prontos:  | Bloqueados:  | PCs: A1=9(fim) A2=9(fim) A3=9(fim) A4=9(fim) A5=9(fim) A6=9 
+[t=52s] FIM | A6 terminou (PC final = 9)
+[t=52s] FIM     | Nenhum processo rodando | Prontos:  | Bloqueados:  | PCs: A1=9(fim) A2=9(fim) A3=9(fim) A4=9(fim) A5=9(fim) A6=9(fim) 
+[t=52s] Todos os processos terminaram. Kernel ocioso (Ctrl+C encerra).

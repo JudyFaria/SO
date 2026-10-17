@@ -6,6 +6,8 @@
 
 int main(int argc, char *argv[]){
 
+    (void)argc;
+
     pid_t pid_kernel = getppid();
     int fd = atoi(argv[1]); // descritor de leitura do pipe de I/O
 

@@ -1,0 +1,66 @@
+--- 3 apps, MAX=10, syscalls: A1=- A2=- A3=- ---
+A1 PC=0
+[t= 0s] INICIO  | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=0 A2=0 A3=0 
+A1 PC=1
+[t= 1s] IRQ0    | A2 rodando | Prontos: A3 A1  | Bloqueados:  | PCs: A1=1 A2=0 A3=0 
+A2 PC=0
+[t= 2s] IRQ0    | A3 rodando | Prontos: A1 A2  | Bloqueados:  | PCs: A1=1 A2=0 A3=0 
+A3 PC=0
+A3 PC=1
+[t= 3s] IRQ0    | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=1 A2=0 A3=1 
+A1 PC=2
+[t= 4s] IRQ0    | A2 rodando | Prontos: A3 A1  | Bloqueados:  | PCs: A1=2 A2=0 A3=1 
+A2 PC=1
+[t= 5s] IRQ0    | A3 rodando | Prontos: A1 A2  | Bloqueados:  | PCs: A1=2 A2=1 A3=1 
+A3 PC=2
+[t= 6s] IRQ0    | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=2 A2=1 A3=2 
+A1 PC=3
+[t= 7s] IRQ0    | A2 rodando | Prontos: A3 A1  | Bloqueados:  | PCs: A1=3 A2=1 A3=2 
+A2 PC=2
+[t= 8s] IRQ0    | A3 rodando | Prontos: A1 A2  | Bloqueados:  | PCs: A1=3 A2=2 A3=2 
+A3 PC=3
+[t= 9s] IRQ0    | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=3 A2=2 A3=3 
+A1 PC=4
+[t=10s] IRQ0    | A2 rodando | Prontos: A3 A1  | Bloqueados:  | PCs: A1=4 A2=2 A3=3 
+A2 PC=3
+A2 PC=4
+[t=11s] IRQ0    | A3 rodando | Prontos: A1 A2  | Bloqueados:  | PCs: A1=4 A2=4 A3=3 
+A3 PC=4
+[t=12s] IRQ0    | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=4 A2=4 A3=4 
+A1 PC=5
+[t=13s] IRQ0    | A2 rodando | Prontos: A3 A1  | Bloqueados:  | PCs: A1=5 A2=4 A3=4 
+A2 PC=5
+[t=14s] IRQ0    | A3 rodando | Prontos: A1 A2  | Bloqueados:  | PCs: A1=5 A2=5 A3=4 
+A3 PC=5
+[t=15s] IRQ0    | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=5 A2=5 A3=5 
+A1 PC=6
+[t=16s] IRQ0    | A2 rodando | Prontos: A3 A1  | Bloqueados:  | PCs: A1=6 A2=5 A3=5 
+A2 PC=6
+[t=17s] IRQ0    | A3 rodando | Prontos: A1 A2  | Bloqueados:  | PCs: A1=6 A2=6 A3=5 
+A3 PC=6
+[t=18s] IRQ0    | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=6 A2=6 A3=6 
+A1 PC=7
+[t=19s] IRQ0    | A2 rodando | Prontos: A3 A1  | Bloqueados:  | PCs: A1=7 A2=6 A3=6 
+A2 PC=7
+[t=20s] IRQ0    | A3 rodando | Prontos: A1 A2  | Bloqueados:  | PCs: A1=7 A2=7 A3=6 
+A3 PC=7
+[t=21s] IRQ0    | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=7 A2=7 A3=7 
+A1 PC=8
+[t=22s] IRQ0    | A2 rodando | Prontos: A3 A1  | Bloqueados:  | PCs: A1=8 A2=7 A3=7 
+A2 PC=8
+[t=23s] IRQ0    | A3 rodando | Prontos: A1 A2  | Bloqueados:  | PCs: A1=8 A2=8 A3=7 
+A3 PC=8
+[t=24s] IRQ0    | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=8 A2=8 A3=8 
+A1 PC=9
+[t=25s] IRQ0    | A2 rodando | Prontos: A3 A1  | Bloqueados:  | PCs: A1=9 A2=8 A3=8 
+A2 PC=9
+[t=26s] IRQ0    | A3 rodando | Prontos: A1 A2  | Bloqueados:  | PCs: A1=9 A2=9 A3=8 
+A3 PC=9
+[t=27s] IRQ0    | A1 rodando | Prontos: A2 A3  | Bloqueados:  | PCs: A1=9 A2=9 A3=9 
+[t=27s] FIM | A1 terminou (PC final = 9)
+[t=27s] FIM     | A2 rodando | Prontos: A3  | Bloqueados:  | PCs: A1=9(fim) A2=9 A3=9 
+[t=27s] FIM | A2 terminou (PC final = 9)
+[t=27s] FIM     | A3 rodando | Prontos:  | Bloqueados:  | PCs: A1=9(fim) A2=9(fim) A3=9 
+[t=27s] FIM | A3 terminou (PC final = 9)
+[t=27s] FIM     | Nenhum processo rodando | Prontos:  | Bloqueados:  | PCs: A1=9(fim) A2=9(fim) A3=9(fim) 
+[t=27s] Todos os processos terminaram. Kernel ocioso (Ctrl+C encerra).

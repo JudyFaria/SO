@@ -223,7 +223,8 @@ int main(int argc, char *argv[]){
     setvbuf(stdout, NULL, _IOLBF, 0);   // uma linha = uma escrita (antes de qualquer fork)
 
     // ---- tabela de syscalls: argv[1..N], um token "<PC><R|W>" por app ("-" = nenhum) ----
-    static const char *padrao[6] = {"2R", "2W", "3R", "3W", "4R", "4W"};
+    // static const char *padrao[6] = {"2R", "2W", "3R", "3W", "4R", "4W"};
+    static const char *padrao[6] = {"-", "-", "-", "1R", "-", "-"};
     const char *tokens[N];
     for (int i = 0; i < N; i++)
         tokens[i] = (argc > 1 + i) ? argv[1 + i] : padrao[i];

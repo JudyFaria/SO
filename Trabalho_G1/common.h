@@ -1,6 +1,6 @@
 #ifndef COMMON_H
 #define COMMON_H
-#define MAX 10
+#define MAX 5
 
 typedef enum { MSG_PC, MSG_SYSCALL } TipoMsg;
 
